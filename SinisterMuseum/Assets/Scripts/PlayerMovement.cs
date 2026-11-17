@@ -8,9 +8,11 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Camera Camera;
     [SerializeField] private Rigidbody rb;
-    [SerializeField] private float moveSpeed = 5f;
-    private bool grounded = true;
 
+    [Header("Movement")]
+    public float moveSpeed;
+    public float acceleration = 20f;
+    public float deceleration = 30f;
 
     [Header("Jumping")]
     public float jumpHeight = 3f;
@@ -21,13 +23,11 @@ public class PlayerMovement : MonoBehaviour
     public float gravityIncreaseRate = 1.2f;
     private float currentGravity;
 
-    private bool wasGrounded = false;
-
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         currentGravity = gravity; 
-        wasGrounded = IsGrounded();
+        rb.useGravity = false;
 
     }
 
@@ -67,8 +67,8 @@ public class PlayerMovement : MonoBehaviour
 
 
         Vector2 moveInput = move.action.ReadValue<Vector2>();
-        Vector3 movement = new Vector3(moveInput.x, 0, moveInput.y);
-        rb.linearVelocity = movement * moveSpeed;
+        Vector3 horizontalVelocity = new Vector3(moveInput.x*moveSpeed, rb.linearVelocity.y, moveInput.y*moveSpeed);
+        rb.linearVelocity = horizontalVelocity;
 
         if (jump.action.triggered && isgrounded)
         {
