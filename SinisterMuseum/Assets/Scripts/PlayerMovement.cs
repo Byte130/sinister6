@@ -13,6 +13,9 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed;
     public float acceleration = 20f;
     public float deceleration = 30f;
+    
+    [Header("Rotation")]
+    public float rotationSpeed = 10f;
 
     [Header("Jumping")]
     public float jumpHeight = 3f;
@@ -22,13 +25,13 @@ public class PlayerMovement : MonoBehaviour
     public float maxGravity = -25f;
     public float gravityIncreaseRate = 1.2f;
     private float currentGravity;
+    private Vector3 lastMoveDirection = Vector3.forward;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         currentGravity = gravity; 
         rb.useGravity = false;
-
     }
 
     private void Update()
@@ -63,12 +66,16 @@ public class PlayerMovement : MonoBehaviour
             currentGravity = gravity;
         }
 
-
-
-
         Vector2 moveInput = move.action.ReadValue<Vector2>();
-        Vector3 horizontalVelocity = new Vector3(moveInput.x*moveSpeed, rb.linearVelocity.y, moveInput.y*moveSpeed);
+        Vector3 horizontalVelocity = new Vector3(moveInput.x * moveSpeed, rb.linearVelocity.y, moveInput.y * moveSpeed);
         rb.linearVelocity = horizontalVelocity;
+
+        if (moveInput.magnitude > 0.1f)
+        {
+            lastMoveDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(lastMoveDirection);
+            rb.rotation = Quaternion.Lerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+        }
 
         if (jump.action.triggered && isgrounded)
         {
