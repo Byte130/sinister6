@@ -3,20 +3,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Input")]
-    public InputActionReference move;
-    public InputActionReference jump;
-    public InputActionReference sprint;
+    private PlayerInput playerInput;
 
     [SerializeField] private Camera Camera;
     [SerializeField] private Rigidbody rb;
+    public bool hasGem = false;
 
     [Header("Movement")]
     private float moveSpeed;
     public float basespeed = 5f;
     public float acceleration = 20f;
     public float deceleration = 30f;
-    
+
     [Header("Rotation")]
     public float rotationSpeed = 10f;
 
@@ -26,9 +24,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Sprint")]
     public float sprintSpeed = 10f;
     public float maxStamina = 100f;
-    public float currentStamina=50f;
+    public float currentStamina = 50f;
     public bool canSprint = true;
     public float staminaThreshold = 10f;
+    public float staminaDrainRate = 5f;
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -40,7 +39,8 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        currentGravity = gravity; 
+        playerInput = GetComponent<PlayerInput>();
+        currentGravity = gravity;
         rb.useGravity = false;
     }
 
@@ -49,23 +49,16 @@ public class PlayerMovement : MonoBehaviour
         bool grounded = IsGrounded();
     }
 
-    private void OnEnable()
-    {
-        move.action.Enable();
-        jump.action.Enable();
-        sprint.action.Enable();
-    }
-
-    private void OnDisable()
-    {
-        move.action.Disable();
-        jump.action.Disable();
-        sprint.action.Disable();
-    }
-
     private void FixedUpdate()
     {
         bool isgrounded = IsGrounded();
+
+        // Read input from this player's PlayerInput
+        Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+        bool isSprinting = playerInput.actions["Sprint"].IsPressed();
+        bool isDashing = playerInput.actions["Dash"].triggered;
+        bool isJumping = playerInput.actions["Jump"].triggered;
+
         //gravity during jump
         if (!IsGrounded())
         {
@@ -79,26 +72,36 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sprinting logic
-        IsSprinting();
-        if (sprint.action.IsPressed()&&canSprint==true)
+        IsSprinting(isSprinting);
+        if (isSprinting && canSprint == true)
         {
-            moveSpeed = sprintSpeed; // Set sprint speed
-            currentStamina -= Time.fixedDeltaTime*5f; // Decrease stamina over time
-            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina); // Clamp stamina to max value
+            moveSpeed = sprintSpeed;
+            currentStamina -= Time.fixedDeltaTime * staminaDrainRate;
+            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
         else
         {
-            moveSpeed = basespeed; // Set normal speed
-            currentStamina += Time.fixedDeltaTime; // Regenerate stamina over time
-            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina); // Clamp stamina to max value
+            moveSpeed = basespeed;
+            currentStamina += Time.fixedDeltaTime;
+            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
 
         //movement logic
-        Vector2 moveInput = move.action.ReadValue<Vector2>();
         Vector3 horizontalVelocity = new Vector3(moveInput.x * moveSpeed, rb.linearVelocity.y, moveInput.y * moveSpeed);
         rb.linearVelocity = horizontalVelocity;
 
-
+        //dash logic
+        if (isDashing)
+        {
+            if (hasGem)
+            {
+                specialdash(moveInput);
+            }
+            else
+            {
+                Dash(moveInput);
+            }
+        }
 
         //turn logic
         if (moveInput.magnitude > 0.1f)
@@ -108,23 +111,41 @@ public class PlayerMovement : MonoBehaviour
             rb.rotation = Quaternion.Lerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
 
-
         //jump logic
-        if (jump.action.triggered && isgrounded)
+        if (isJumping && isgrounded)
         {
-                rb.AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -2f * gravity), ForceMode.VelocityChange);
+            rb.AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -2f * gravity), ForceMode.VelocityChange);
         }
     }
-    public void IsSprinting()
+
+    public void IsSprinting(bool isSprinting)
     {
-        if (sprint.action.IsPressed() && currentStamina <= 0.1)
+        if (isSprinting && currentStamina <= 0.1)
         {
             canSprint = false;
         }
-        else if (sprint.action.IsPressed() && currentStamina >staminaThreshold)
+        else if (isSprinting && currentStamina > staminaThreshold)
         {
             canSprint = true;
         }
+    }
+
+    //dashes
+    public void Dash(Vector2 moveInput)
+    {
+        if (currentStamina > 10f)
+        {
+            Vector3 dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            rb.AddForce(dashDirection * sprintSpeed * 10f, ForceMode.VelocityChange);
+            currentStamina -= 10f;
+            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+        }
+        else return;
+    }
+
+    public void specialdash(Vector2 moveInput)
+    {
+        // Implementation here
     }
 
     public bool IsGrounded()
@@ -134,7 +155,7 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsMoving()
     {
-        return move.action.ReadValue<Vector2>().magnitude > 0.1f;
+        return playerInput.actions["Move"].ReadValue<Vector2>().magnitude > 0.1f;
     }
 
     private void OnCollisionEnter(Collision collision)
