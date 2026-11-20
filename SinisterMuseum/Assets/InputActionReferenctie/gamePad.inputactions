@@ -79,7 +79,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "throw",
+                    "name": "ThrowGem",
                     "type": "Button",
                     "id": "90a4087f-5795-4cf1-b1b1-2c67638e668e",
                     "expectedControlType": "",
@@ -426,7 +426,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "throw",
+                    "action": "ThrowGem",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

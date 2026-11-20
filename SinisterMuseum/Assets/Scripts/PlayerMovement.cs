@@ -7,7 +7,10 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Camera Camera;
     [SerializeField] private Rigidbody rb;
+    [Header("Gem+throw")]
     public bool hasGem = false;
+    [SerializeField] private GameObject gemPrefab;
+    public float throwForce = 10f;
 
     [Header("Movement")]
     private float moveSpeed;
@@ -58,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
         bool isSprinting = playerInput.actions["Sprint"].IsPressed();
         bool isDashing = playerInput.actions["Dash"].triggered;
         bool isJumping = playerInput.actions["Jump"].triggered;
+        bool isThrowingGem = playerInput.actions["ThrowGem"].triggered;
 
         //gravity during jump
         if (!IsGrounded())
@@ -103,6 +107,12 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        //throw gem logic
+        if (isThrowingGem)
+        {
+            ThrowGem(moveInput);
+        }
+
         //turn logic
         if (moveInput.magnitude > 0.1f)
         {
@@ -145,9 +155,31 @@ public class PlayerMovement : MonoBehaviour
 
     public void specialdash(Vector2 moveInput)
     {
-        // Implementation here
+        if (currentStamina > 10f)
+        {
+            currentStamina -= 10f;
+            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+        }
+        else return;
     }
 
+    //throwing
+    public void ThrowGem(Vector2 moveInput)
+    {
+        if (hasGem && gemPrefab != null)
+        {
+            Debug.Log("Throwing Gem");
+            Vector3 throwDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            GameObject thrownGem = Instantiate(gemPrefab, transform.position + throwDirection, Quaternion.identity);
+            Rigidbody gemRb = thrownGem.GetComponent<Rigidbody>();
+            gemRb.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
+            hasGem = false;
+        }
+    }
+
+
+
+    //grounded and moving checks
     public bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, 1.2f);

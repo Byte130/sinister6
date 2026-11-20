@@ -172,7 +172,7 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Gamepad
-  m_DefaultActionMap: 707fa7e5-d90e-40f7-91c0-801c0a1eac79
+  m_DefaultActionMap: gamePad
   m_SplitScreenIndex: 0
   m_Camera: {fileID: 0}
 --- !u!114 &5685084742598745717
@@ -187,13 +187,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19e094a1ff1af6f4b8e387a602d30af3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  move: {fileID: -4214318481217236195, guid: 7faa75ee0b3c7244ebe117bd1bf5c2f1, type: 3}
-  jump: {fileID: 2350792569903867069, guid: 7faa75ee0b3c7244ebe117bd1bf5c2f1, type: 3}
-  sprint: {fileID: 1986004670121234590, guid: 7faa75ee0b3c7244ebe117bd1bf5c2f1, type: 3}
-  dash: {fileID: -1162252504287588322, guid: 7faa75ee0b3c7244ebe117bd1bf5c2f1, type: 3}
   Camera: {fileID: 0}
   rb: {fileID: 6897747358879596931}
   hasGem: 0
+  gemPrefab: {fileID: 6232440625071552507, guid: 13d6e8c172141414bbd83b5d136d6762, type: 3}
+  throwForce: 10
   basespeed: 5
   acceleration: 20
   deceleration: 30
