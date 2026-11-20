@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
+  - Gem
   layers:
   - Default
   - TransparentFX
@@ -12,8 +13,8 @@ TagManager:
   - ground
   - Water
   - UI
-  - 
-  - 
+  - Gem
+  - Player
   - 
   - 
   - 

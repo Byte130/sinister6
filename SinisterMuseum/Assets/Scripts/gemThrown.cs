@@ -19,16 +19,29 @@ public class gemThrown : MonoBehaviour
         canPickUpGem = true;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        isInAir = false;
-        //collider for the gem tedecting if it hit a player
+        if (!canPickUpGem)
+            return;
+
+        isInAir = true;
         Collider[] colliders = Physics.OverlapSphere(transform.position, sphereRadius);
 
         foreach (Collider collider in colliders)
         {
-            if (collider.CompareTag("Player") && canPickUpGem)
+            if (collider.CompareTag("Ground"))
+            {
+                isInAir = false;
+                break;
+            }
+        }
+
+        float detectionRadius = isInAir ? sphereRadius * GemInAirMultiplier : sphereRadius;
+        Collider[] detectionColliders = Physics.OverlapSphere(transform.position, detectionRadius);
+
+        foreach (Collider collider in detectionColliders)
+        {
+            if (collider.CompareTag("Player"))
             {
                 PlayerMovement playerMovement = collider.GetComponent<PlayerMovement>();
                 if (playerMovement != null)
@@ -38,42 +51,18 @@ public class gemThrown : MonoBehaviour
                     return;
                 }
             }
-            //if the gem is in the air increase the sphere radius to detect players that are further away
-            else if (!collider.CompareTag("Ground"))
-            {
-                isInAir = true;
-                Collider[] groundColliders = Physics.OverlapSphere(transform.position, sphereRadius * GemInAirMultiplier);
-
-                foreach (Collider groundCollider in groundColliders)
-                {
-                    if (groundCollider.CompareTag("Player") && canPickUpGem)
-                    {
-                        PlayerMovement playerMovement = groundCollider.GetComponent<PlayerMovement>();
-                        if (playerMovement != null)
-                        {
-                            playerMovement.hasGem = true;
-                            Destroy(gameObject);
-                            return;
-                        }
-                    }
-                }
-            }
-            else if (collider.CompareTag("Ground"))
-            {
-                isInAir = false;
-            }
         }
+    }
 
-        void OnDrawGizmos()
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, sphereRadius);
+
+        if (isInAir)
         {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position, sphereRadius);
-
-            if (isInAir)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(transform.position, sphereRadius * GemInAirMultiplier);
-            }
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, sphereRadius * GemInAirMultiplier);
         }
     }
 }

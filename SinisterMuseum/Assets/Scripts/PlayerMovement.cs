@@ -7,10 +7,14 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Camera Camera;
     [SerializeField] private Rigidbody rb;
+
     [Header("Gem+throw")]
     public bool hasGem = false;
     [SerializeField] private GameObject gemPrefab;
-    public float throwForce = 10f;
+
+    [Header("Throwing")]
+    public float throwForce = 20f;
+    public float ThrowArcUp = 1.5f;
 
     [Header("Movement")]
     private float moveSpeed;
@@ -56,8 +60,11 @@ public class PlayerMovement : MonoBehaviour
     {
         bool isgrounded = IsGrounded();
 
+        Debug.Log("Is Grounded: " + isgrounded);
+
         // Read input from this player's PlayerInput
         Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+        Vector2 aimInput = playerInput.actions["AimGem"].ReadValue<Vector2>();
         bool isSprinting = playerInput.actions["Sprint"].IsPressed();
         bool isDashing = playerInput.actions["Dash"].triggered;
         bool isJumping = playerInput.actions["Jump"].triggered;
@@ -110,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
         //throw gem logic
         if (isThrowingGem)
         {
-            ThrowGem(moveInput);
+            ThrowGem(aimInput);
         }
 
         //turn logic
@@ -125,6 +132,7 @@ public class PlayerMovement : MonoBehaviour
         if (isJumping && isgrounded)
         {
             rb.AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -2f * gravity), ForceMode.VelocityChange);
+            Debug.Log("Jumping");
         }
     }
 
@@ -164,15 +172,30 @@ public class PlayerMovement : MonoBehaviour
     }
 
     //throwing
-    public void ThrowGem(Vector2 moveInput)
+    public void ThrowGem(Vector2 aimInput)
     {
         if (hasGem && gemPrefab != null)
         {
-            Debug.Log("Throwing Gem");
-            Vector3 throwDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
-            GameObject thrownGem = Instantiate(gemPrefab, transform.position + throwDirection, Quaternion.identity);
+            Vector3 throwDirection;
+            
+            // If aiming, use aim direction; otherwise use look direction
+            if (aimInput.magnitude > 0)
+            {
+                throwDirection = new Vector3(aimInput.x, 0, aimInput.y).normalized;
+            }
+            else
+            {
+                throwDirection = transform.forward;
+            }
+            
+            // Spawn gem slightly in front of player
+            Vector3 spawnPos = transform.position + transform.forward * 1f;
+            GameObject thrownGem = Instantiate(gemPrefab, spawnPos, Quaternion.identity);
             Rigidbody gemRb = thrownGem.GetComponent<Rigidbody>();
-            gemRb.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
+            
+            // Apply throw force with slight upward arc
+            Vector3 finalThrowDirection = throwDirection + Vector3.up * ThrowArcUp;
+            gemRb.AddForce(finalThrowDirection.normalized * throwForce, ForceMode.VelocityChange);
             hasGem = false;
         }
     }

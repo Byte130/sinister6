@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6897747358879596931}
   - component: {fileID: 5363746250334915999}
   - component: {fileID: 5685084742598745717}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -190,8 +190,9 @@ MonoBehaviour:
   Camera: {fileID: 0}
   rb: {fileID: 6897747358879596931}
   hasGem: 0
-  gemPrefab: {fileID: 6232440625071552507, guid: 13d6e8c172141414bbd83b5d136d6762, type: 3}
-  throwForce: 10
+  gemPrefab: {fileID: 1815029077264608590, guid: 77406e2850f33e94aac5a6610e14e366, type: 3}
+  throwForce: 20
+  ThrowArcUp: 1.5
   basespeed: 5
   acceleration: 20
   deceleration: 30
@@ -218,7 +219,7 @@ GameObject:
   - component: {fileID: 8247535154570718925}
   - component: {fileID: 4939377806889429668}
   - component: {fileID: 6680459827782586892}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
