@@ -62,8 +62,6 @@ public class PlayerMovement : MonoBehaviour
     {
         bool isgrounded = IsGrounded();
 
-        Debug.Log("Is Grounded: " + isgrounded);
-
         // Read input from this player's PlayerInput
         Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
         Vector2 aimInput = playerInput.actions["AimGem"].ReadValue<Vector2>();
@@ -226,6 +224,15 @@ public class PlayerMovement : MonoBehaviour
     public void TeamSelect(bool isTeam)
     {
         team = isTeam;
+    }
+
+    public (bool, bool) BroadcastGemStatus()
+    {
+        if(hasGem)
+        {
+            //Debug.Log("Player " + team + " has the gem!");
+        }
+        return (hasGem, team);
     }
 
 }
