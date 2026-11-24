@@ -8,6 +8,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Camera Camera;
     [SerializeField] private Rigidbody rb;
 
+    [SerializeField] private bool team;
+
     [Header("Gem+throw")]
     public bool hasGem = false;
     [SerializeField] private GameObject gemPrefab;
@@ -220,4 +222,10 @@ public class PlayerMovement : MonoBehaviour
             rb.useGravity = true;
         }
     }
+
+    public void TeamSelect(bool isTeam)
+    {
+        team = isTeam;
+    }
+
 }

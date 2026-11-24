@@ -3,6 +3,7 @@ using System.Collections;
 
 public class gemThrown : MonoBehaviour
 {
+    private Rigidbody rb;
     private float sphereRadius = 1f;
     [SerializeField] private float GemInAirMultiplier = 3f;
     private bool isInAir = false;
@@ -10,6 +11,7 @@ public class gemThrown : MonoBehaviour
 
     private void Start()
     {
+        rb = GetComponent<Rigidbody>();
         StartCoroutine(EnablePickup());
     }
 

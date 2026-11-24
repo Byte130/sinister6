@@ -192,7 +192,7 @@ MonoBehaviour:
   hasGem: 0
   gemPrefab: {fileID: 1815029077264608590, guid: 77406e2850f33e94aac5a6610e14e366, type: 3}
   throwForce: 20
-  ThrowArcUp: 1.5
+  ThrowArcUp: 0.5
   basespeed: 5
   acceleration: 20
   deceleration: 30

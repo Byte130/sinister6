@@ -35,17 +35,18 @@ public class playerManager : MonoBehaviour
     {
         if (spawnPoint.Length == 0) return;
         
-        int availableSpawnIndex = -1;
+        List<int> availableSpawnIndices = new List<int>();
         for (int i = 0; i < spawnPointOccupied.Length; i++)
         {
             if (!spawnPointOccupied[i])
             {
-                availableSpawnIndex = i;
-                break;
+                availableSpawnIndices.Add(i);
             }
         }
         
-        if (availableSpawnIndex == -1) return;
+        if (availableSpawnIndices.Count == 0) return;
+        
+        int availableSpawnIndex = availableSpawnIndices[Random.Range(0, availableSpawnIndices.Count)];
         
         Transform spawnLocation = spawnPoint[availableSpawnIndex];
         
@@ -56,6 +57,14 @@ public class playerManager : MonoBehaviour
         {
             playerInput.SwitchCurrentControlScheme("Gamepad", gamePad);
             playerInput.camera = Camera.main;
+        }
+        
+        // Determine team based on spawn index (0-1: false, 2-3: true)
+        bool teamValue = availableSpawnIndex >= 2;
+        var playerMovement = newPlayer.GetComponent<PlayerMovement>();
+        if (playerMovement != null)
+        {
+            playerMovement.TeamSelect(teamValue);
         }
         
         gamepadToPlayer[gamePad] = newPlayer;
