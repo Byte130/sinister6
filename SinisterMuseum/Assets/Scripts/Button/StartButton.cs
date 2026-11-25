@@ -16,6 +16,6 @@ public class StartButton : MonoBehaviour
     public void OnButtonPressed()
     {
         if (!string.IsNullOrEmpty(SceneName))
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene(0);
     }
 }
