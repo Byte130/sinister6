@@ -54,6 +54,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool isStunned = false;
     [SerializeField] private float maxStunnedTimer = 1f;
     [SerializeField] private float stunnedTimer;
+    [SerializeField] private float dashDuration = 0.3f;
+    [SerializeField] private float dashTimer;
+    [SerializeField] private bool isDashingActive = false;
+    [SerializeField] private Vector3 dashDirection;
 
     private void Start()
     {
@@ -99,6 +103,16 @@ public class PlayerMovement : MonoBehaviour
         bool isDashing = playerInput.actions["Dash"].triggered;
         bool isJumping = playerInput.actions["Jump"].triggered;
         bool isThrowingGem = playerInput.actions["ThrowGem"].triggered;
+
+        // Update dash timer
+        if (isDashingActive)
+        {
+            dashTimer -= Time.fixedDeltaTime;
+            if (dashTimer <= 0f)
+            {
+                isDashingActive = false;
+            }
+        }
 
         //gravity during jump
         if (!IsGrounded())
@@ -185,40 +199,34 @@ public class PlayerMovement : MonoBehaviour
 
         if (currentStamina > 10f)
         {
-            Vector3 dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            if (dashDirection.magnitude < 0.1f)
+            {
+                dashDirection = lastMoveDirection;
+            }
+
             rb.AddForce(dashDirection * sprintSpeed * 10f, ForceMode.VelocityChange);
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
 
-            // Steal gem from player on dash
-            Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
-            foreach (Collider hit in hits)
-            {
-                if (hit.CompareTag("Player") && hit.gameObject != gameObject)
-                {
-                    PlayerMovement otherPlayer = hit.GetComponent<PlayerMovement>();
-                    if (otherPlayer != null && otherPlayer.hasGem)
-                    {
-                        otherPlayer.hasGem = false;
-                        hasGem = true;
-                    }
-                    else if (otherPlayer != null&& !otherPlayer.hasGem)
-                    {
-                        otherPlayer.getStunned();
-                        getStunned();
-                    }
-                }
-                else if(hit.CompareTag("object/wall")){
-                    getStunned();
-                }
-                //else if(hit.CompareTag("Player") && hit.gameObject == gameObject){
-                //    PlayerMovement otherPlayer = hit.GetComponent<PlayerMovement>();
-                //    if(otherPlayer != null){
-                //        otherPlayer.getStunned();
-                //        getStunned();
-                //    }
-                //}
-            }
+            isDashingActive = true;
+            dashTimer = dashDuration;
+
+            float dashDistance = sprintSpeed * 10f * dashDuration;
+            RaycastHit hit;
+
+            //if (Physics.Raycast(transform.position, dashDirection, out hit, dashDistance))
+            //{
+            //    if (hit.collider.CompareTag("Player") && hit.collider.gameObject != gameObject)
+            //    {
+            //        PlayerMovement otherPlayer = hit.collider.GetComponent<PlayerMovement>();
+            //        if (otherPlayer != null && otherPlayer.hasGem)
+            //        {
+            //            otherPlayer.hasGem = false;
+            //            hasGem = true;
+            //        }
+            //    }
+            //}
         }
         else return;
     }
@@ -290,6 +298,26 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (isDashingActive && collision.gameObject.CompareTag("object/wall"))
+        {
+            isDashingActive = false;
+            getStunned();
+        }
+        else if (isDashingActive && collision.gameObject.CompareTag("Player"))
+        {
+            PlayerMovement otherPlayer = collision.gameObject.GetComponent<PlayerMovement>();
+            if (otherPlayer != null&& !otherPlayer.hasGem)
+            {
+                otherPlayer.getStunned();
+                getStunned();
+                isDashingActive = false;
+            } else if (otherPlayer != null && otherPlayer.hasGem)
+            {
+                otherPlayer.hasGem = false;
+                hasGem = true;
+                isDashingActive = false;
+            }
+        }
         if (collision.gameObject.CompareTag("Ground"))
         {
             rb.useGravity = true;
