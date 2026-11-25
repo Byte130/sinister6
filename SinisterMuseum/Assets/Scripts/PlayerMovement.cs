@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -37,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     public bool canSprint = true;
     public float staminaThreshold = 10f;
     public float staminaDrainRate = 5f;
+    public float staminaRegenRate = 5f;
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -44,6 +46,14 @@ public class PlayerMovement : MonoBehaviour
     public float gravityIncreaseRate = 1.2f;
     private float currentGravity;
     private Vector3 lastMoveDirection = Vector3.forward;
+
+
+    [Header("dash")]
+    [SerializeField] private float maxInvinsibleTimer = 1f;
+    [SerializeField] private float invinsibleTimer;
+    [SerializeField] private bool isStunned = false;
+    [SerializeField] private float maxStunnedTimer = 1f;
+    [SerializeField] private float stunnedTimer;
 
     private void Start()
     {
@@ -56,10 +66,30 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         bool grounded = IsGrounded();
-    }
 
+        if (invinsibleTimer > 0f)
+        {
+            invinsibleTimer -= Time.deltaTime;
+        }
+        else if (invinsibleTimer <= 0f && gameObject.tag == "invinsible")
+        {
+            gameObject.tag = "Player";
+        }
+
+        if (stunnedTimer > 0f)
+        {
+            stunnedTimer -= Time.deltaTime;
+        }
+        else if (stunnedTimer <= 0f && isStunned)
+        {
+            isStunned = false;
+            rb.constraints = RigidbodyConstraints.None;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+    }
     private void FixedUpdate()
     {
+        if(isStunned) return;
         bool isgrounded = IsGrounded();
 
         // Read input from this player's PlayerInput
@@ -93,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             moveSpeed = basespeed;
-            currentStamina += Time.fixedDeltaTime;
+            currentStamina += Time.fixedDeltaTime * staminaRegenRate;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
 
@@ -151,12 +181,44 @@ public class PlayerMovement : MonoBehaviour
     //dashes
     public void Dash(Vector2 moveInput)
     {
+        if (isStunned) return;
+
         if (currentStamina > 10f)
         {
             Vector3 dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
             rb.AddForce(dashDirection * sprintSpeed * 10f, ForceMode.VelocityChange);
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+
+            // Steal gem from player on dash
+            Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
+            foreach (Collider hit in hits)
+            {
+                if (hit.CompareTag("Player") && hit.gameObject != gameObject)
+                {
+                    PlayerMovement otherPlayer = hit.GetComponent<PlayerMovement>();
+                    if (otherPlayer != null && otherPlayer.hasGem)
+                    {
+                        otherPlayer.hasGem = false;
+                        hasGem = true;
+                    }
+                    else if (otherPlayer != null&& !otherPlayer.hasGem)
+                    {
+                        otherPlayer.getStunned();
+                        getStunned();
+                    }
+                }
+                else if(hit.CompareTag("object/wall")){
+                    getStunned();
+                }
+                //else if(hit.CompareTag("Player") && hit.gameObject == gameObject){
+                //    PlayerMovement otherPlayer = hit.GetComponent<PlayerMovement>();
+                //    if(otherPlayer != null){
+                //        otherPlayer.getStunned();
+                //        getStunned();
+                //    }
+                //}
+            }
         }
         else return;
     }
@@ -167,6 +229,8 @@ public class PlayerMovement : MonoBehaviour
         {
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+            gameObject.tag = "invinsible";
+            invinsibleTimer = maxInvinsibleTimer;
         }
         else return;
     }
@@ -177,22 +241,24 @@ public class PlayerMovement : MonoBehaviour
         if (hasGem && gemPrefab != null)
         {
             Vector3 throwDirection;
-            
+
             // If aiming, use aim direction; otherwise use look direction
-            if (aimInput.magnitude > 0)
-            {
-                throwDirection = new Vector3(aimInput.x, 0, aimInput.y).normalized;
-            }
-            else
-            {
-                throwDirection = transform.forward;
-            }
-            
+            //if (aimInput.magnitude > 0)
+            //{
+            //    throwDirection = new Vector3(aimInput.x, 0, aimInput.y).normalized;
+            //}
+            //else
+            //{
+            throwDirection = transform.forward;
+            //}
+            //commentend cause we maybe want this in a later build
+
+
             // Spawn gem slightly in front of player
             Vector3 spawnPos = transform.position + transform.forward * 1f;
             GameObject thrownGem = Instantiate(gemPrefab, spawnPos, Quaternion.identity);
             Rigidbody gemRb = thrownGem.GetComponent<Rigidbody>();
-            
+
             // Apply throw force with slight upward arc
             Vector3 finalThrowDirection = throwDirection + Vector3.up * ThrowArcUp;
             gemRb.AddForce(finalThrowDirection.normalized * throwForce, ForceMode.VelocityChange);
@@ -201,6 +267,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
+    public void getStunned()
+    {
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        
+        isStunned = true;
+        stunnedTimer = maxStunnedTimer;
+    }
 
     //grounded and moving checks
     public bool IsGrounded()
@@ -228,11 +303,34 @@ public class PlayerMovement : MonoBehaviour
 
     public (bool, bool) BroadcastGemStatus()
     {
-        if(hasGem)
+        if (hasGem)
         {
             //Debug.Log("Player " + team + " has the gem!");
         }
         return (hasGem, team);
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        float dashStunRadius = 1.5f;
+        float dashGemStealRadius = 1.5f;
+
+        // Draw stun hitbox (red)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, dashStunRadius);
+
+        // Draw gem steal hitbox (yellow)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, dashGemStealRadius);
+
+        // Highlight active dash zones
+        if (invinsibleTimer > 0f)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Gizmos.DrawSphere(transform.position, dashStunRadius);
+
+            Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+            Gizmos.DrawSphere(transform.position, dashGemStealRadius);
+        }
+    }
 }
