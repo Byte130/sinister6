@@ -58,6 +58,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dashTimer;
     [SerializeField] private bool isDashingActive = false;
     [SerializeField] private Vector3 dashDirection;
+    [SerializeField] private float dashMaxCooldown = 1f;
+    [SerializeField] private float dashCooldownTimer;
+    [SerializeField] private bool canDash = true;
 
     private void Start()
     {
@@ -89,6 +92,15 @@ public class PlayerMovement : MonoBehaviour
             isStunned = false;
             rb.constraints = RigidbodyConstraints.None;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+        if (dashCooldownTimer > 0f)
+        {
+            dashCooldownTimer -= Time.deltaTime;
+        }
+        else if (dashCooldownTimer <= 0f && !canDash)
+        {
+            dashCooldownTimer = 0f;
+            canDash = true;
         }
     }
     private void FixedUpdate()
@@ -208,7 +220,7 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(dashDirection * sprintSpeed * 10f, ForceMode.VelocityChange);
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
-
+            canDash = false;
             isDashingActive = true;
             dashTimer = dashDuration;
 
@@ -233,7 +245,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void specialdash(Vector2 moveInput)
     {
-        if (currentStamina > 10f)
+
+        if (currentStamina > 10f&& CompareTag("Player"))
         {
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
