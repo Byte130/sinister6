@@ -13,6 +13,8 @@ public class gemThrown : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         StartCoroutine(EnablePickup());
+        FollowTargets followTargets = Camera.main.GetComponent<FollowTargets>();
+        followTargets.AddTarget(transform);
     }
 
     private IEnumerator EnablePickup()
