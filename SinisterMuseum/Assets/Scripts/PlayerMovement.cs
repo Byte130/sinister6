@@ -48,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 lastMoveDirection = Vector3.forward;
 
 
-    [Header("dash")]
+    [Header("Dash")]
     [SerializeField] private float maxInvinsibleTimer = 1f;
     [SerializeField] private float invinsibleTimer;
     [SerializeField] private bool isStunned = false;
