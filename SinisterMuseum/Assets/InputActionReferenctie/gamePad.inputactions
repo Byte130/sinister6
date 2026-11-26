@@ -46,7 +46,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "194e7bbd-d4de-4c28-9770-a58944a81e94",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -447,6 +447,34 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "AimGem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "gpUI",
+            "id": "9fb71d07-d335-460c-96a5-6cfb9865292c",
+            "actions": [
+                {
+                    "name": "select",
+                    "type": "Button",
+                    "id": "d85bb878-9a0d-48c2-9f9f-f751ca6d268d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "66c63891-ae9d-4b9b-8b8b-e976f9fa57d8",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
