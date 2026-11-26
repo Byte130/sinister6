@@ -68,6 +68,10 @@ public class PlayerMovement : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         currentGravity = gravity;
         rb.useGravity = false;
+
+        FollowTargets followTargets = Camera.main.GetComponent<FollowTargets>();
+        followTargets.AddTarget(transform);
+
     }
 
     private void Update()

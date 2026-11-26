@@ -57,4 +57,11 @@ public class FollowTargets : MonoBehaviour
         }
         return bounds.size.x;
     }
+    public void AddTarget(Transform target)
+    {
+        if (!targets.Contains(target))
+        {
+            targets.Add(target);
+        }
+    }
 } 
