@@ -385,11 +385,11 @@ MonoBehaviour:
   - {fileID: 1556193813}
   - {fileID: 1851860509}
   - {fileID: 163047531}
-  offset: {x: 0, y: 0, z: 0}
+  offset: {x: 0, y: 8, z: -8}
   smoothTime: 0.5
   velocity: {x: 0, y: 0, z: 0}
-  minZoom: 40
-  maxZoom: 10
+  minZoom: 300
+  maxZoom: 60
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
