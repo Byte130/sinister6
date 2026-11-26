@@ -209,7 +209,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isStunned) return;
 
-        if (currentStamina > 10f)
+        if (currentStamina > 10f&& canDash)
         {
             dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
             if (dashDirection.magnitude < 0.1f)
@@ -221,6 +221,7 @@ public class PlayerMovement : MonoBehaviour
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
             canDash = false;
+            dashCooldownTimer = dashMaxCooldown;
             isDashingActive = true;
             dashTimer = dashDuration;
 
