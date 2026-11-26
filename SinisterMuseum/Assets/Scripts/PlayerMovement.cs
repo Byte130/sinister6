@@ -264,7 +264,7 @@ public class PlayerMovement : MonoBehaviour
     //throwing
     public void ThrowGem(Vector2 aimInput)
     {
-        if (hasGem && gemPrefab != null)
+        if (hasGem && gemPrefab != null&& CompareTag("Player"))
         {
             Vector3 throwDirection;
 
