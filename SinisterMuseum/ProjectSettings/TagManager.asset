@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Ground
   - Gem
+  - object/wall
+  - invinsible
   layers:
   - Default
   - TransparentFX

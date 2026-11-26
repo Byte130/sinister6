@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -37,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     public bool canSprint = true;
     public float staminaThreshold = 10f;
     public float staminaDrainRate = 5f;
+    public float staminaRegenRate = 5f;
 
     [Header("Gravity")]
     public float gravity = -9.81f;
@@ -44,6 +46,21 @@ public class PlayerMovement : MonoBehaviour
     public float gravityIncreaseRate = 1.2f;
     private float currentGravity;
     private Vector3 lastMoveDirection = Vector3.forward;
+
+
+    [Header("Dash")]
+    [SerializeField] private float maxInvinsibleTimer = 1f;
+    [SerializeField] private float invinsibleTimer;
+    [SerializeField] private bool isStunned = false;
+    [SerializeField] private float maxStunnedTimer = 1f;
+    [SerializeField] private float stunnedTimer;
+    [SerializeField] private float dashDuration = 0.3f;
+    [SerializeField] private float dashTimer;
+    [SerializeField] private bool isDashingActive = false;
+    [SerializeField] private Vector3 dashDirection;
+    [SerializeField] private float dashMaxCooldown = 1f;
+    [SerializeField] private float dashCooldownTimer;
+    [SerializeField] private bool canDash = true;
 
     private void Start()
     {
@@ -56,10 +73,39 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         bool grounded = IsGrounded();
-    }
 
+        if (invinsibleTimer > 0f)
+        {
+            invinsibleTimer -= Time.deltaTime;
+        }
+        else if (invinsibleTimer <= 0f && gameObject.tag == "invinsible")
+        {
+            gameObject.tag = "Player";
+        }
+
+        if (stunnedTimer > 0f)
+        {
+            stunnedTimer -= Time.deltaTime;
+        }
+        else if (stunnedTimer <= 0f && isStunned)
+        {
+            isStunned = false;
+            rb.constraints = RigidbodyConstraints.None;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+        if (dashCooldownTimer > 0f)
+        {
+            dashCooldownTimer -= Time.deltaTime;
+        }
+        else if (dashCooldownTimer <= 0f && !canDash)
+        {
+            dashCooldownTimer = 0f;
+            canDash = true;
+        }
+    }
     private void FixedUpdate()
     {
+        if(isStunned) return;
         bool isgrounded = IsGrounded();
 
         // Read input from this player's PlayerInput
@@ -69,6 +115,16 @@ public class PlayerMovement : MonoBehaviour
         bool isDashing = playerInput.actions["Dash"].triggered;
         bool isJumping = playerInput.actions["Jump"].triggered;
         bool isThrowingGem = playerInput.actions["ThrowGem"].triggered;
+
+        // Update dash timer
+        if (isDashingActive)
+        {
+            dashTimer -= Time.fixedDeltaTime;
+            if (dashTimer <= 0f)
+            {
+                isDashingActive = false;
+            }
+        }
 
         //gravity during jump
         if (!IsGrounded())
@@ -93,7 +149,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             moveSpeed = basespeed;
-            currentStamina += Time.fixedDeltaTime;
+            currentStamina += Time.fixedDeltaTime * staminaRegenRate;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
 
@@ -151,22 +207,51 @@ public class PlayerMovement : MonoBehaviour
     //dashes
     public void Dash(Vector2 moveInput)
     {
+        if (isStunned) return;
+
         if (currentStamina > 10f)
         {
-            Vector3 dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            dashDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
+            if (dashDirection.magnitude < 0.1f)
+            {
+                dashDirection = lastMoveDirection;
+            }
+
             rb.AddForce(dashDirection * sprintSpeed * 10f, ForceMode.VelocityChange);
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+            canDash = false;
+            isDashingActive = true;
+            dashTimer = dashDuration;
+
+            float dashDistance = sprintSpeed * 10f * dashDuration;
+            //RaycastHit hit;
+
+            //if (Physics.Raycast(transform.position, dashDirection, out hit, dashDistance))
+            //{
+            //    if (hit.collider.CompareTag("Player") && hit.collider.gameObject != gameObject)
+            //    {
+            //        PlayerMovement otherPlayer = hit.collider.GetComponent<PlayerMovement>();
+            //        if (otherPlayer != null && otherPlayer.hasGem)
+            //        {
+            //            otherPlayer.hasGem = false;
+            //            hasGem = true;
+            //        }
+            //    }
+            //}
         }
         else return;
     }
 
     public void specialdash(Vector2 moveInput)
     {
-        if (currentStamina > 10f)
+
+        if (currentStamina > 10f&& CompareTag("Player"))
         {
             currentStamina -= 10f;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+            gameObject.tag = "invinsible";
+            invinsibleTimer = maxInvinsibleTimer;
         }
         else return;
     }
@@ -177,22 +262,24 @@ public class PlayerMovement : MonoBehaviour
         if (hasGem && gemPrefab != null)
         {
             Vector3 throwDirection;
-            
+
             // If aiming, use aim direction; otherwise use look direction
-            if (aimInput.magnitude > 0)
-            {
-                throwDirection = new Vector3(aimInput.x, 0, aimInput.y).normalized;
-            }
-            else
-            {
-                throwDirection = transform.forward;
-            }
-            
+            //if (aimInput.magnitude > 0)
+            //{
+            //    throwDirection = new Vector3(aimInput.x, 0, aimInput.y).normalized;
+            //}
+            //else
+            //{
+            throwDirection = transform.forward;
+            //}
+            //commentend cause we maybe want this in a later build
+
+
             // Spawn gem slightly in front of player
             Vector3 spawnPos = transform.position + transform.forward * 1f;
             GameObject thrownGem = Instantiate(gemPrefab, spawnPos, Quaternion.identity);
             Rigidbody gemRb = thrownGem.GetComponent<Rigidbody>();
-            
+
             // Apply throw force with slight upward arc
             Vector3 finalThrowDirection = throwDirection + Vector3.up * ThrowArcUp;
             gemRb.AddForce(finalThrowDirection.normalized * throwForce, ForceMode.VelocityChange);
@@ -201,6 +288,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
+    public void getStunned()
+    {
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        
+        isStunned = true;
+        stunnedTimer = maxStunnedTimer;
+    }
 
     //grounded and moving checks
     public bool IsGrounded()
@@ -215,6 +311,27 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (isDashingActive && collision.gameObject.CompareTag("object/wall"))
+        {
+            isDashingActive = false;
+            getStunned();
+        }
+        else if (isDashingActive && collision.gameObject.CompareTag("Player"))
+        {
+            PlayerMovement otherPlayer = collision.gameObject.GetComponent<PlayerMovement>();
+            if (otherPlayer != null&& !otherPlayer.hasGem)
+            {
+                otherPlayer.getStunned();
+                getStunned();
+                isDashingActive = false;
+            } else if (otherPlayer != null && otherPlayer.hasGem)
+            {
+                otherPlayer.hasGem = false;
+                otherPlayer.getStunned();
+                hasGem = true;
+                isDashingActive = false;
+            }
+        }
         if (collision.gameObject.CompareTag("Ground"))
         {
             rb.useGravity = true;
@@ -228,11 +345,34 @@ public class PlayerMovement : MonoBehaviour
 
     public (bool, bool) BroadcastGemStatus()
     {
-        if(hasGem)
+        if (hasGem)
         {
             //Debug.Log("Player " + team + " has the gem!");
         }
         return (hasGem, team);
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        float dashStunRadius = 1.5f;
+        float dashGemStealRadius = 1.5f;
+
+        // Draw stun hitbox (red)
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, dashStunRadius);
+
+        // Draw gem steal hitbox (yellow)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, dashGemStealRadius);
+
+        // Highlight active dash zones
+        if (invinsibleTimer > 0f)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Gizmos.DrawSphere(transform.position, dashStunRadius);
+
+            Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+            Gizmos.DrawSphere(transform.position, dashGemStealRadius);
+        }
+    }
 }
