@@ -123,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
         // Update dash timer
         if (isDashingActive)
         {
-            dashTimer -= Time.fixedDeltaTime;
+            dashTimer -= Time.deltaTime;
             if (dashTimer <= 0f)
             {
                 isDashingActive = false;
@@ -133,7 +133,7 @@ public class PlayerMovement : MonoBehaviour
         //gravity during jump
         if (!IsGrounded())
         {
-            currentGravity -= gravityIncreaseRate * Time.fixedDeltaTime;
+            currentGravity -= gravityIncreaseRate * Time.deltaTime;
             currentGravity = Mathf.Max(currentGravity, maxGravity);
             rb.AddForce(Vector3.up * currentGravity, ForceMode.Acceleration);
         }
@@ -147,13 +147,13 @@ public class PlayerMovement : MonoBehaviour
         if (isSprinting && canSprint == true)
         {
             moveSpeed = sprintSpeed;
-            currentStamina -= Time.fixedDeltaTime * staminaDrainRate;
+            currentStamina -= Time.deltaTime * staminaDrainRate;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
         else
         {
             moveSpeed = basespeed;
-            currentStamina += Time.fixedDeltaTime * staminaRegenRate;
+            currentStamina += Time.deltaTime * staminaRegenRate;
             currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
         }
 
@@ -185,7 +185,7 @@ public class PlayerMovement : MonoBehaviour
         {
             lastMoveDirection = new Vector3(moveInput.x, 0, moveInput.y).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(lastMoveDirection);
-            rb.rotation = Quaternion.Lerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+            rb.rotation = Quaternion.Lerp(rb.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
         //jump logic
