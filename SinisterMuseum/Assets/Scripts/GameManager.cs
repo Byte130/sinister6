@@ -1,8 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
 public class GameManager : MonoBehaviour
 {
     [SerializeField] float timer = 0f;
     [SerializeField] float timeLimit;
+
 
     public GameObject PauseMenu;
 
@@ -25,12 +28,12 @@ public class GameManager : MonoBehaviour
                 if (player.BroadcastGemStatus().Item1 && player.BroadcastGemStatus().Item2)
                 {
                     Debug.Log(player.BroadcastGemStatus().Item2 + " has won!");
-                    // You can add additional logic here to handle the end of the game, such as stopping player movement, showing a victory screen, etc.
+                    SceneManager.LoadScene(3);
                 }
                 else if (player.BroadcastGemStatus().Item1 && !player.BroadcastGemStatus().Item2)
                 {
                     Debug.Log(player.BroadcastGemStatus().Item2 + " has won!");
-                    // You can add additional logic here to handle the end of the game, such as stopping player movement, showing a victory screen, etc.
+                    SceneManager.LoadScene(2);
                 }
                 else
                 {

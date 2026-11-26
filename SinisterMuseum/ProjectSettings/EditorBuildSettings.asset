@@ -9,11 +9,14 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 9d884c325a707dc4fa6798c7d958bc03
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
     path: Assets/Scenes/Main Scene.unity
     guid: 72df8343ad014e347902d8607abfe7c9
+  - enabled: 1
+    path: Assets/Scenes/RedVictoryScreen.unity
+    guid: 43801f9dc09f86a4f83620c7fd85fb52
+  - enabled: 1
+    path: Assets/Scenes/BlueVictoryScreen.unity
+    guid: 7e9829244ee3d35499d93fe0f098b302
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
