@@ -16,6 +16,8 @@ public class FollowTargets : MonoBehaviour
 
     private void LateUpdate()
     {
+        RemoveNullTargets();
+        
         if (targets.Count == 0)
             return;
 
@@ -28,7 +30,7 @@ public class FollowTargets : MonoBehaviour
         transform.position = Vector3.SmoothDamp(transform.position, newPosition, ref velocity, smoothTime);
 
         Vector3 GetCenterPoint()
-            {
+        {
             if (targets.Count == 1)
             {
                 return targets[0].position;
@@ -64,4 +66,15 @@ public class FollowTargets : MonoBehaviour
             targets.Add(target);
         }
     }
-} 
+
+    private void RemoveNullTargets()
+    {
+        for (int i = targets.Count - 1; i >= 0; i--)
+        {
+            if (targets[i] == null)
+            {
+                targets.RemoveAt(i);
+            }
+        }
+    }
+}
