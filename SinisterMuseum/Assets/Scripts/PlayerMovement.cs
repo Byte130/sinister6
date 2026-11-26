@@ -213,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
             dashTimer = dashDuration;
 
             float dashDistance = sprintSpeed * 10f * dashDuration;
-            RaycastHit hit;
+            //RaycastHit hit;
 
             //if (Physics.Raycast(transform.position, dashDirection, out hit, dashDistance))
             //{
@@ -314,6 +314,7 @@ public class PlayerMovement : MonoBehaviour
             } else if (otherPlayer != null && otherPlayer.hasGem)
             {
                 otherPlayer.hasGem = false;
+                otherPlayer.getStunned();
                 hasGem = true;
                 isDashingActive = false;
             }
