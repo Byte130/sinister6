@@ -4,9 +4,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] float timer = 0f;
     [SerializeField] float timeLimit;
 
+    public GameObject PauseMenu;
+
     void Start()
     {
         timeLimit = Random.Range(45f, 75f);
+        PauseMenu.SetActive(false);
     }
 
     void Update()
@@ -35,5 +38,13 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
+        if (1 == 1) 
+        {
+           
+            PauseMenu.SetActive(true);
+
+        }
+        
     }
 }
