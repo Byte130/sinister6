@@ -361,8 +361,8 @@ MonoBehaviour:
   offset: {x: 0, y: 8, z: -8}
   smoothTime: 0.5
   velocity: {x: 0, y: 0, z: 0}
-  minZoom: 300
-  maxZoom: 60
+  minZoom: 120
+  maxZoom: 100
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

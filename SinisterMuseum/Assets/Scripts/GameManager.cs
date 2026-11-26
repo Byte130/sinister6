@@ -38,13 +38,5 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-
-        if (1 == 1) 
-        {
-           
-            PauseMenu.SetActive(true);
-
-        }
-        
     }
 }
