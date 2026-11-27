@@ -62,6 +62,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dashCooldownTimer;
     [SerializeField] private bool canDash = true;
 
+    Vector2 moveInput;
+    Vector2 aimInput;
+    bool isSprinting;
+    bool DashingRequest;
+    bool jumpRequested;
+    bool throwingGemRequested;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -76,7 +83,37 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        bool grounded = IsGrounded();
+        moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+        aimInput = playerInput.actions["AimGem"].ReadValue<Vector2>();
+        isSprinting = playerInput.actions["Sprint"].IsPressed();
+
+        if (!DashingRequest && playerInput.actions["Dash"].WasPressedThisFrame())
+        {
+            DashingRequest = true;
+        }
+        else if (DashingRequest && playerInput.actions["Dash"].WasReleasedThisFrame())
+        {
+            DashingRequest = false;
+        }
+
+        if (!jumpRequested && playerInput.actions["Jump"].WasPressedThisFrame())
+        {
+            jumpRequested = true;
+        }
+        else if(jumpRequested && playerInput.actions["Jump"].WasReleasedThisFrame())
+        {
+            jumpRequested = false;
+        }
+
+        if(!throwingGemRequested && playerInput.actions["ThrowGem"].WasPressedThisFrame())
+        {
+            throwingGemRequested = true;
+        }
+        else if (throwingGemRequested && playerInput.actions["ThrowGem"].WasReleasedThisFrame())
+        {
+            throwingGemRequested = false;
+        }
+
 
         if (invinsibleTimer > 0f)
         {
@@ -109,16 +146,12 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
+
         if(isStunned) return;
         bool isgrounded = IsGrounded();
 
         // Read input from this player's PlayerInput
-        Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
-        Vector2 aimInput = playerInput.actions["AimGem"].ReadValue<Vector2>();
-        bool isSprinting = playerInput.actions["Sprint"].IsPressed();
-        bool isDashing = playerInput.actions["Dash"].triggered;
-        bool isJumping = playerInput.actions["Jump"].triggered;
-        bool isThrowingGem = playerInput.actions["ThrowGem"].triggered;
+
 
         // Update dash timer
         if (isDashingActive)
@@ -162,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = horizontalVelocity;
 
         //dash logic
-        if (isDashing)
+        if (DashingRequest)
         {
             if (hasGem)
             {
@@ -175,7 +208,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //throw gem logic
-        if (isThrowingGem)
+        if (throwingGemRequested)
         {
             ThrowGem(aimInput);
         }
@@ -189,7 +222,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //jump logic
-        if (isJumping && isgrounded)
+        if (jumpRequested && isgrounded)
         {
             rb.AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -2f * gravity), ForceMode.VelocityChange);
             Debug.Log("Jumping");

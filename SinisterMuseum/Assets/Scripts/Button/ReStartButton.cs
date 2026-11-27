@@ -15,6 +15,6 @@ public class ReStartButton : MonoBehaviour
     public void OnButtonPressed()
     {
         if (!string.IsNullOrEmpty(SceneName))
-            SceneManager.LoadScene(2);
+            SceneManager.LoadScene(1);
     }
 }
