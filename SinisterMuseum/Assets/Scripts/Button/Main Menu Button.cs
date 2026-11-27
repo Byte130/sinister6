@@ -4,8 +4,6 @@ using UnityEngine.UI;
 public class MainMenuButton : MonoBehaviour
 {
 
-    public string SceneName;
-
     void Start()
     {
         var btn = GetComponent<Button>();
@@ -15,7 +13,6 @@ public class MainMenuButton : MonoBehaviour
 
     public void OnButtonPressed()
     {
-        if (!string.IsNullOrEmpty(SceneName))
-            SceneManager.LoadScene(0);
+        SceneManager.LoadScene(0);
     }
 }
